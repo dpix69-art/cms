@@ -3,12 +3,32 @@ import { saveAs } from 'file-saver';
 import type { Content, EditorMetadata, UploadedFile } from './schema';
 import { denormalizeContent } from './normalize';
 
-/**
- * Export content as JSON file
- */
+function pruneSales(content: Content): Content {
+  const clone: Content = JSON.parse(JSON.stringify(content));
+  clone.series = clone.series.map((s) => ({
+    ...s,
+    works: s.works.map((w) => {
+      if (!w.sale) return w;
+      const availability = w.sale.availability || 'available';
+      // если недоступно — вычищаем price
+      if (availability !== 'available') {
+        const { notes } = w.sale;
+        return { ...w, sale: notes ? { availability, notes } : { availability } };
+      }
+      // если доступно, но mode=on_request — оставляем без amount
+      if (w.sale.price?.mode === 'on_request') {
+        return { ...w, sale: { ...w.sale, price: { mode: 'on_request' } } };
+      }
+      return w;
+    }),
+  }));
+  return clone;
+}
+
+/** Export content as JSON file */
 export function exportContentJSON(content: Content, metadata: EditorMetadata) {
-  const exportedContent = denormalizeContent(content, metadata);
-  
+  const exportedContent = pruneSales(denormalizeContent(content, metadata));
+
   // Ensure proper key ordering
   const orderedContent = {
     site: exportedContent.site,
@@ -26,17 +46,15 @@ export function exportContentJSON(content: Content, metadata: EditorMetadata) {
   saveAs(blob, 'content.json');
 }
 
-/**
- * Export content and uploaded images as ZIP
- */
+/** Export content and uploaded images as ZIP */
 export async function exportContentZIP(
-  content: Content, 
-  metadata: EditorMetadata, 
+  content: Content,
+  metadata: EditorMetadata,
   uploadedFiles: UploadedFile[]
 ) {
   const zip = new JSZip();
-  const exportedContent = denormalizeContent(content, metadata);
-  
+  const exportedContent = pruneSales(denormalizeContent(content, metadata));
+
   // Ensure proper key ordering
   const orderedContent = {
     site: exportedContent.site,
@@ -53,77 +71,16 @@ export async function exportContentZIP(
   const jsonString = JSON.stringify(orderedContent, null, 2);
   zip.file('content.json', jsonString);
 
-  // Add uploaded images to ZIP in correct folder structure
-  const missingAssets: string[] = [];
+  // Add uploaded images to ZIP
   const addedPaths = new Set<string>();
-
-  uploadedFiles.forEach((uploadedFile) => {
-    if (!addedPaths.has(uploadedFile.path)) {
-      zip.file(uploadedFile.path, uploadedFile.file);
-      addedPaths.add(uploadedFile.path);
+  uploadedFiles.forEach((f) => {
+    if (!addedPaths.has(f.path)) {
+      zip.file(f.path, f.file);
+      addedPaths.add(f.path);
     }
   });
 
-  // Check for missing assets referenced in JSON but not uploaded
-  const allImagePaths = extractAllImagePaths(exportedContent);
-  allImagePaths.forEach((path) => {
-    if (!addedPaths.has(path)) {
-      missingAssets.push(path);
-    }
-  });
-
-  // Generate and download ZIP
+  // Missing assets report (optional)
   const zipBlob = await zip.generateAsync({ type: 'blob' });
   saveAs(zipBlob, 'kremenskii-content.zip');
-
-  // Return missing assets report
-  return missingAssets;
-}
-
-/**
- * Extract all image paths from content
- */
-function extractAllImagePaths(content: Content): string[] {
-  const paths: string[] = [];
-
-  // Site portrait
-  if (content.statement.portrait) {
-    paths.push(content.statement.portrait);
-  }
-
-  // Series artwork images
-  content.series.forEach((series) => {
-    paths.push(...series.artworkImages);
-    
-    // Work images
-    series.works.forEach((work) => {
-      work.images.forEach((image) => {
-        paths.push(image.url);
-      });
-    });
-  });
-
-  // Sound covers and photos
-  content.sounds.forEach((sound) => {
-    if (sound.cover) {
-      paths.push(sound.cover);
-    }
-    if (sound.photos) {
-      sound.photos.forEach((photo) => {
-        paths.push(photo.url);
-      });
-    }
-  });
-
-  // Contacts portfolio PDF
-  if (content.contacts.portfolioPdf) {
-    paths.push(content.contacts.portfolioPdf);
-  }
-
-  // Statement press kit PDF
-  if (content.statement.pressKitPdf) {
-    paths.push(content.statement.pressKitPdf);
-  }
-
-  return paths;
 }
