@@ -162,8 +162,9 @@ export default function HomeSettingsEditor({ site, series, onChange }: Props) {
         </div>
 
         <div className="flex gap-3">
-          <button type="submit" className="btn-primary">
-            Save
+          {/* className="btn-primary" */}
+          <button type="submit" >
+            Save Changes
           </button>
         </div>
       </form>
