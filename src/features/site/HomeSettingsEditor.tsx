@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { useForm } from "react-hook-form";
-import Field from "@/components/Field";
-import type { Site, Series } from "@/lib/schema";
+import Field from "../../components/Field";
+import type { Site, Series } from "../../lib/schema";
 
 type Props = {
   site: Site;
