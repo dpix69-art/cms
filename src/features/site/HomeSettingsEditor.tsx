@@ -90,32 +90,32 @@ export default function HomeSettingsEditor({ site, series, onChange }: Props) {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 mt-6">
         {/* Базовые поля сайта — можно править здесь же */}
         <div className="grid grid-cols-2 gap-6">
-          <Field label="Artist Name">
+          {/* <Field label="Artist Name">
             <input
               type="text"
               className="input-text"
               {...register("artistName")}
               placeholder="Artist name"
             />
-          </Field>
-          <Field label="Role">
+          </Field> */}
+          {/* <Field label="Role">
             <input
               type="text"
               className="input-text"
               {...register("role")}
               placeholder="Artist / Painter / ..."
             />
-          </Field>
+          </Field> */}
         </div>
 
-        <Field label="Statement">
+        {/* <Field label="Statement">
           <textarea
             rows={3}
             className="input-text"
             {...register("statement")}
             placeholder="Short statement"
           />
-        </Field>
+        </Field> */}
 
         {/* Featured #1 */}
         <div className="rounded-2xl border p-4 space-y-3">
