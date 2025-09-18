@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import AppShell from '../components/AppShell';
 import SiteForm from '../features/site/SiteForm';
+import HomeSettingsEditor from '../features/site/HomeSettingsEditor';
 import NavEditor from '../features/nav/NavEditor';
 import SeriesList from '../features/series/SeriesList';
 import SeriesEditor from '../features/series/SeriesEditor';
@@ -23,6 +24,7 @@ const defaultContent: Content = {
     artistName: '',
     role: '',
     statement: '',
+    homeFeatured: [], // ← добавлено: дефолт для закреплённых карточек
   },
   nav: [],
   series: [],
@@ -160,6 +162,7 @@ export default function EditorPage() {
     setSelectedSeriesIndex(null);
     setSelectedSoundIndex(null);
   }, []);
+
   const handleImport = useCallback(() => {
     const input = document.createElement('input');
     input.type = 'file';
@@ -274,6 +277,15 @@ export default function EditorPage() {
     switch (selectedPath) {
       case 'site':
         return <SiteForm data={content.site} onChange={handleSiteChange} />;
+
+      case 'home':
+        return (
+          <HomeSettingsEditor
+            site={content.site}
+            series={content.series}
+            onChange={handleSiteChange}
+          />
+        );
       
       case 'nav':
         return <NavEditor data={content.nav} onChange={handleNavChange} />;

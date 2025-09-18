@@ -16,17 +16,18 @@ interface TreeNode {
   isDynamic?: boolean;
 }
 
-
-export default function SidebarTree({ 
-  selectedPath, 
-  onPathChange, 
-  seriesCount = 0, 
-  soundsCount = 0 
+export default function SidebarTree({
+  selectedPath,
+  onPathChange,
+  seriesCount = 0,
+  soundsCount = 0,
 }: SidebarTreeProps) {
   const [expandedNodes, setExpandedNodes] = React.useState<Set<string>>(new Set(['series', 'sounds']));
 
+  // Добавили пункт Home (Featured) с id = "home"
   const treeStructure: TreeNode[] = [
     { id: 'site', label: 'Site', isSelectable: true },
+    { id: 'home', label: 'Home (Featured)', isSelectable: true }, // ← НОВОЕ
     { id: 'nav', label: 'Navigation', isSelectable: true },
     {
       id: 'series',
@@ -70,7 +71,6 @@ export default function SidebarTree({
           onClick={() => onPathChange(node.id)}
         >
           <File size={16} className="mr-3 text-gray-400" />
-          
           <span className="font-medium">{node.label}</span>
         </div>
       </div>

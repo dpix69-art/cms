@@ -54,7 +54,7 @@ export const WorkSchema = z.object({
   technique: z.string().optional(),     // relaxed
   dimensions: z.string().optional(),    // relaxed
   images: z.array(ImageSchema).min(1, 'At least one image is required'),
-  sale: SaleSchema.optional(),          // NEW
+  sale: SaleSchema.optional(),          // sale block (availability/price/notes)
 });
 export type Work = z.infer<typeof WorkSchema>;
 
@@ -92,6 +92,11 @@ export const SoundPhotoSchema = z.object({
 });
 export type SoundPhoto = z.infer<typeof SoundPhotoSchema>;
 
+export const BodyBlockSchema = z.object({
+  type: z.string(),
+  text: z.string(),
+});
+
 export const SoundSchema = z.object({
   slug: z.string().min(1, 'Slug is required'),
   title: z.string().min(1, 'Title is required'),
@@ -103,7 +108,7 @@ export const SoundSchema = z.object({
   tracks: z.array(SoundTrackSchema).optional(),
   meta: SoundMetaSchema.optional().default({ label: '', platforms: [] }),
   photos: z.array(SoundPhotoSchema).optional(),
-  bodyBlocks: z.array(z.object({ type: z.string(), text: z.string() })).optional(),
+  bodyBlocks: z.array(BodyBlockSchema).optional(),
 });
 export type Sound = z.infer<typeof SoundSchema>;
 
@@ -122,10 +127,19 @@ export const SocialSchema = z.object({
 });
 export type Social = z.infer<typeof SocialSchema>;
 
+/** --- NEW: link to a specific artwork for homepage pins --- */
+export const FeaturedRefSchema = z.object({
+  series: z.string().min(1, 'Series slug is required'),
+  work: z.string().min(1, 'Work slug is required'),
+});
+export type FeaturedRef = z.infer<typeof FeaturedRefSchema>;
+
 export const SiteSchema = z.object({
   artistName: z.string().min(1, 'Artist name is required'),
   role: z.string().min(1, 'Role is required'),
   statement: z.string().min(1, 'Statement is required'),
+  /** Up to two pinned artworks for the homepage top row */
+  homeFeatured: z.array(FeaturedRefSchema).max(2).optional().default([]),
 });
 export type Site = z.infer<typeof SiteSchema>;
 
